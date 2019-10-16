@@ -16,8 +16,6 @@ public class SessionController {
     public String start() {
         UUID id = UUID.randomUUID();
         mapSession.put(id, new Session(id, 0));
-//        allSession.add(new Session( UUID.randomUUID(), 0));
-//        return allSession.get(allSession.size() - 1).getId().toString();
         return id.toString();
     }
 
@@ -27,12 +25,6 @@ public class SessionController {
             mapSession.put(id, mapSession.get(id).setCountLogin(mapSession.get(id).getCountLogin() + 1));
             return mapSession.get(id).getCountLogin().toString();
         }
-//        for (int i = 0; i < allSession.size(); i++) {
-//            if (allSession.get(i).getId().equals(id)) {
-//                allSession.set(i, allSession.get(i).setCountLogin(allSession.get(i).getCountLogin() + 1));
-//                return allSession.get(i).getCountLogin().toString();
-//            }
-//        }
         return "Session does not exist";
     }
 
@@ -42,22 +34,6 @@ public class SessionController {
             mapSession.remove(id);
             return "Session terminate";
         }
-//        for (int i = 0; i < allSession.size(); i++) {
-//            if (allSession.get(i).getId().equals(id)) {
-//                deleteElement(i);
-//                return "Session terminate";
-//            }
-//        }
         return "Session does not exist";
-    }
-
-    public void deleteElement(int index) {
-        List<Session> copyList = new ArrayList<>(allSession);
-        allSession = new ArrayList<>();
-        for (int i = 0; i < copyList.size(); i++) {
-            if (i != index) {
-                allSession.add(new Session(copyList.get(i).getId(), copyList.get(i).getCountLogin()));
-            }
-        }
     }
 }
