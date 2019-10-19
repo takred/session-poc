@@ -44,9 +44,11 @@ public class SessionController {
         if (mapAccount.containsKey(loginName)) {
             if (!mapAccount.get(loginName).getLoginStatus()) {
                 UUID loginSessionId = UUID.randomUUID();
-                mapAccount.put(loginName, mapAccount.get(loginName).setLoginSessionId(loginSessionId));
-                mapAccount.put(loginName, mapAccount.get(loginName).setLoginStatus(true));
-                mapAccount.put(loginName, mapAccount.get(loginName).setGameStatus(false));
+                this.mapAccount.put(loginName, mapAccount.get(loginName)
+                        .setLoginSessionId(loginSessionId)
+                        .setLoginStatus(true)
+                        .setGameStatus(false)
+                );
                 return loginSessionId.toString();
             } else {
                 return "Нужно сначала разлогиниться.";
