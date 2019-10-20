@@ -53,10 +53,11 @@ public class SessionController {
 
     @RequestMapping(value = "/login/{loginName}")
     public String login(@PathVariable("loginName") String loginName) {
+        Account loginNameObj = mapAccount.get(loginName);
         if (mapAccount.containsKey(loginName)) {
-            if (!mapAccount.get(loginName).getLoginStatus()) {
+            if (!loginNameObj.getLoginStatus()) {
                 UUID loginSessionId = UUID.randomUUID();
-                this.mapAccount.put(loginName, mapAccount.get(loginName)
+                this.mapAccount.put(loginName, loginNameObj
                         .setLoginSessionId(loginSessionId)
                         .setLoginStatus(true)
                         .setGameStatus(false)
@@ -80,14 +81,15 @@ public class SessionController {
     @RequestMapping(value = "/guess/{gameSessionId}/{number}")
     public String guess(@PathVariable("gameSessionId") UUID gameSessionId, @PathVariable("number") Integer number) {
         if (mapSession.containsKey(gameSessionId)) {
-            mapSession.put(gameSessionId, mapSession.get(gameSessionId).
-                    setCountLogin(mapSession.get(gameSessionId).getCountLogin() + 1));
-            if (mapSession.get(gameSessionId).getRandomNumber() > number) {
+            Session gameSessionIdObj = mapSession.get(gameSessionId);
+            mapSession.put(gameSessionId, gameSessionIdObj.
+                    setCountLogin(gameSessionIdObj.getCountLogin() + 1));
+            if (gameSessionIdObj.getRandomNumber() > number) {
                 return "Число больше.";
-            } else if (mapSession.get(gameSessionId).getRandomNumber() < number) {
+            } else if (gameSessionIdObj.getRandomNumber() < number) {
                 return "Число меньше.";
             } else {
-                Integer count = mapSession.get(gameSessionId).getCountLogin();
+                Integer count = gameSessionIdObj.getCountLogin();
                 terminate(gameSessionId);
                 return "Угадал за " + count.toString() + ".";
             }
@@ -107,11 +109,12 @@ public class SessionController {
 
     @RequestMapping(value = "/logout/{loginName}")
     public String logout(@PathVariable("loginName") String loginName){
+        Account loginNameObj = mapAccount.get(loginName);
         if (mapAccount.containsKey(loginName)) {
-            if (mapAccount.get(loginName).getLoginStatus()) {
-                if (mapAccount.get(loginName).getGameStatus()) {
-                    terminate(mapAccount.get(loginName).getGameSessionId());
-                    this.mapAccount.put(loginName, mapAccount.get(loginName)
+            if (loginNameObj.getLoginStatus()) {
+                if (loginNameObj.getGameStatus()) {
+                    terminate(loginNameObj.getGameSessionId());
+                    this.mapAccount.put(loginName, loginNameObj
                             .setGameStatus(false)
                             .setGameSessionId(null)
                             .setLoginStatus(false)
@@ -119,7 +122,7 @@ public class SessionController {
                     );
                    return  "Игра прервана. Увидимся вновь!";
                 } else {
-                    mapAccount.put(loginName, mapAccount.get(loginName).setLoginStatus(false));
+                    mapAccount.put(loginName, loginNameObj.setLoginStatus(false));
                     return "До свидания!";
                 }
             } else {
