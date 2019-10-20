@@ -44,7 +44,8 @@ public class SessionController {
     public String register(@PathVariable("loginName") String loginName) {
         if (!mapAccount.containsKey(loginName)) {
             UUID loginSessionId = UUID.randomUUID();
-            mapAccount.put(loginName, new Account(loginName, loginSessionId, true, false, null));
+            mapAccount.put(loginName, new Account(loginName, loginSessionId,
+                    true, false, null));
             return "Добро пожаловать.";
         }
         return "Логин уже сущетвует.";
@@ -79,7 +80,8 @@ public class SessionController {
     @RequestMapping(value = "/guess/{gameSessionId}/{number}")
     public String guess(@PathVariable("gameSessionId") UUID gameSessionId, @PathVariable("number") Integer number) {
         if (mapSession.containsKey(gameSessionId)) {
-            mapSession.put(gameSessionId, mapSession.get(gameSessionId).setCountLogin(mapSession.get(gameSessionId).getCountLogin() + 1));
+            mapSession.put(gameSessionId, mapSession.get(gameSessionId).
+                    setCountLogin(mapSession.get(gameSessionId).getCountLogin() + 1));
             if (mapSession.get(gameSessionId).getRandomNumber() > number) {
                 return "Число больше.";
             } else if (mapSession.get(gameSessionId).getRandomNumber() < number) {
@@ -109,10 +111,12 @@ public class SessionController {
             if (mapAccount.get(loginName).getLoginStatus()) {
                 if (mapAccount.get(loginName).getGameStatus()) {
                     terminate(mapAccount.get(loginName).getGameSessionId());
-                    mapAccount.put(loginName, mapAccount.get(loginName).setGameStatus(false));
-                    mapAccount.put(loginName, mapAccount.get(loginName).setGameSessionId(null));
-                    mapAccount.put(loginName, mapAccount.get(loginName).setLoginStatus(false));
-                    mapAccount.put(loginName, mapAccount.get(loginName).setLoginSessionId(null));
+                    this.mapAccount.put(loginName, mapAccount.get(loginName)
+                            .setGameStatus(false)
+                            .setGameSessionId(null)
+                            .setLoginStatus(false)
+                            .setLoginSessionId(null)
+                    );
                    return  "Игра прервана. Увидимся вновь!";
                 } else {
                     mapAccount.put(loginName, mapAccount.get(loginName).setLoginStatus(false));
