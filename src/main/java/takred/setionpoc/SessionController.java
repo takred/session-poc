@@ -15,12 +15,23 @@ public class SessionController {
 
     @RequestMapping(value = "/start/{loginSessionId}")
     public String start(@PathVariable("loginSessionId") UUID loginSessionId) {
-        Account account = mapAccount.values().stream().filter(a -> a.getLoginSessionId().equals(loginSessionId)).findAny().orElseGet(null);
+        Account account = mapAccount.values().stream().filter(a -> a.getLoginSessionId().equals(loginSessionId))
+                .findAny().orElseGet(null);
         if (account != null) {
             if (!mapAccount.get(account.getLoginName()).getGameStatus()) {
                 UUID gameSessionId = UUID.randomUUID();
-                mapSession.put(gameSessionId, new Session(gameSessionId, 0, ThreadLocalRandom.current().nextInt(0, 10000)));
-                mapAccount.put(account.getLoginName(), new Account( account.getLoginName(), account.getLoginSessionId(), account.getLoginStatus(), true, gameSessionId));
+                mapSession.put(gameSessionId
+                        , new Session(
+                                gameSessionId, 0
+                                , ThreadLocalRandom.current().nextInt(0, 10000)
+                        )
+                );
+                mapAccount.put(account.getLoginName()
+                        , new Account(
+                                account.getLoginName(), account.getLoginSessionId()
+                                , account.getLoginStatus(), true, gameSessionId
+                        )
+                );
                 return gameSessionId.toString();
             } else{
                 return "Сначала закончите предыдущую игру!";
@@ -44,9 +55,11 @@ public class SessionController {
         if (mapAccount.containsKey(loginName)) {
             if (!mapAccount.get(loginName).getLoginStatus()) {
                 UUID loginSessionId = UUID.randomUUID();
-                mapAccount.put(loginName, mapAccount.get(loginName).setLoginSessionId(loginSessionId));
-                mapAccount.put(loginName, mapAccount.get(loginName).setLoginStatus(true));
-                mapAccount.put(loginName, mapAccount.get(loginName).setGameStatus(false));
+                this.mapAccount.put(loginName, mapAccount.get(loginName)
+                        .setLoginSessionId(loginSessionId)
+                        .setLoginStatus(true)
+                        .setGameStatus(false)
+                );
                 return loginSessionId.toString();
             } else {
                 return "Нужно сначала разлогиниться.";
