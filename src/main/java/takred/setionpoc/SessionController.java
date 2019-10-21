@@ -12,6 +12,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class SessionController {
     private Map<UUID, Session> mapSession = new HashMap<>();
     private Map<String, Account> mapAccount = new HashMap<>();
+    private Map<String, List<ResultGame>> mapHistoryGames = new HashMap<>();
 
     @RequestMapping(value = "/start/{loginSessionId}")
     public String start(@PathVariable("loginSessionId") UUID loginSessionId) {
@@ -32,6 +33,9 @@ public class SessionController {
                                 , account.getLoginStatus(), true, gameSessionId
                         )
                 );
+                List<ResultGame> resultGames = new ArrayList<>(mapHistoryGames.get(account.getLoginName()));
+                resultGames.add(new ResultGame(account.getLoginName(), gameSessionId, 0, false));
+                mapHistoryGames.put(account.getLoginName(), resultGames);
                 return gameSessionId.toString();
             } else{
                 return "Сначала закончите предыдущую игру!";
@@ -46,18 +50,19 @@ public class SessionController {
             UUID loginSessionId = UUID.randomUUID();
             mapAccount.put(loginName, new Account(loginName, loginSessionId,
                     true, false, null));
-            return "Добро пожаловать.";
+            mapHistoryGames.put(loginName, new ArrayList<>());
+            return "Добро пожаловать. " + loginSessionId;
         }
         return "Логин уже сущетвует.";
     }
 
     @RequestMapping(value = "/login/{loginName}")
     public String login(@PathVariable("loginName") String loginName) {
-        Account loginNameObj = mapAccount.get(loginName);
+        Account account = mapAccount.get(loginName);
         if (mapAccount.containsKey(loginName)) {
-            if (!loginNameObj.getLoginStatus()) {
+            if (!account.getLoginStatus()) {
                 UUID loginSessionId = UUID.randomUUID();
-                this.mapAccount.put(loginName, loginNameObj
+                this.mapAccount.put(loginName, account
                         .setLoginSessionId(loginSessionId)
                         .setLoginStatus(true)
                         .setGameStatus(false)
@@ -80,21 +85,54 @@ public class SessionController {
 
     @RequestMapping(value = "/guess/{gameSessionId}/{number}")
     public String guess(@PathVariable("gameSessionId") UUID gameSessionId, @PathVariable("number") Integer number) {
+        Account account = mapAccount.values().stream().filter(a -> a.getGameSessionId().equals(gameSessionId)).findAny().orElseGet(null);
         if (mapSession.containsKey(gameSessionId)) {
-            Session gameSessionIdObj = mapSession.get(gameSessionId);
-            mapSession.put(gameSessionId, gameSessionIdObj.
-                    setCountLogin(gameSessionIdObj.getCountLogin() + 1));
-            if (gameSessionIdObj.getRandomNumber() > number) {
+            Session session = mapSession.get(gameSessionId);
+            mapSession.put(gameSessionId, session.
+                    setCountLogin(session.getCountLogin() + 1));
+            if (session.getRandomNumber() > number) {
                 return "Число больше.";
-            } else if (gameSessionIdObj.getRandomNumber() < number) {
+            } else if (session.getRandomNumber() < number) {
                 return "Число меньше.";
             } else {
-                Integer count = gameSessionIdObj.getCountLogin();
+                mapAccount.put(account.getLoginName(),account.setGameStatus(false));
+                Integer count = session.getCountLogin();
+                List<ResultGame> resultGames = new ArrayList<>(mapHistoryGames.get(account.getLoginName()));
+                resultGames.set(resultGames.size() - 1, mapHistoryGames.get(account.getLoginName()).get(resultGames.size() - 1).setAttempts(count));
+                mapHistoryGames.put(account.getLoginName(), resultGames);
                 terminate(gameSessionId);
                 return "Угадал за " + count.toString() + ".";
             }
         } else {
             return "Session does not exist";
+        }
+    }
+
+    @RequestMapping(value = "/historyGames/{loginName}")
+    public String historyGames(@PathVariable("loginName") String loginName){
+        if (mapHistoryGames.containsKey(loginName)) {
+            Integer countGames = mapHistoryGames.get(loginName).size();
+            return countGames.toString() + " игры сыграно. Выберите нужную вам игру.";
+        } else {
+            return "Логин не найден.";
+        }
+    }
+
+    @RequestMapping(value = "/historyGames/{loginName}/{numberGame}")
+    public String resultGame(@PathVariable("loginName") String loginName, @PathVariable("numberGame") int numberGame){
+        if (mapHistoryGames.containsKey(loginName)) {
+            if (mapHistoryGames.get(loginName).size() >= numberGame && numberGame > 0){
+                String result = "Сделано " + mapHistoryGames.get(loginName).get(numberGame - 1).getAttempts().toString() + " попыток.";
+                if (mapHistoryGames.get(loginName).get(numberGame - 1).getWin()){
+                    return result + " Победа!";
+                } else {
+                    return result + " Игра прервана.";
+                }
+            } else {
+                return "Игры под таким номером нет.";
+            }
+        } else {
+            return "Логин не найден.";
         }
     }
 
@@ -109,12 +147,18 @@ public class SessionController {
 
     @RequestMapping(value = "/logout/{loginName}")
     public String logout(@PathVariable("loginName") String loginName){
-        Account loginNameObj = mapAccount.get(loginName);
+        Account account = mapAccount.get(loginName);
         if (mapAccount.containsKey(loginName)) {
-            if (loginNameObj.getLoginStatus()) {
-                if (loginNameObj.getGameStatus()) {
-                    terminate(loginNameObj.getGameSessionId());
-                    this.mapAccount.put(loginName, loginNameObj
+            if (account.getLoginStatus()) {
+                if (account.getGameStatus()) {
+                    List<ResultGame> resultGames = new ArrayList<>(mapHistoryGames.get(loginName));
+                    resultGames.set(resultGames.size() - 1,
+                            new ResultGame(loginName, account.getGameSessionId(),
+                                    mapSession.get(account.getGameSessionId()).getCountLogin(),
+                                    resultGames.get(resultGames.size() - 1).getWin()));
+                    mapHistoryGames.put(loginName, resultGames);
+                    terminate(account.getGameSessionId());
+                    this.mapAccount.put(loginName, account
                             .setGameStatus(false)
                             .setGameSessionId(null)
                             .setLoginStatus(false)
@@ -122,7 +166,7 @@ public class SessionController {
                     );
                    return  "Игра прервана. Увидимся вновь!";
                 } else {
-                    mapAccount.put(loginName, loginNameObj.setLoginStatus(false));
+                    mapAccount.put(loginName, account.setLoginStatus(false));
                     return "До свидания!";
                 }
             } else {
