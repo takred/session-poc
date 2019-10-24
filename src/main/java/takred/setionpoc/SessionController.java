@@ -15,9 +15,10 @@ public class SessionController {
     private Map<String, List<ResultGame>> mapHistoryGames = new HashMap<>();
 
     @RequestMapping(value = "/start/{loginSessionId}")
-    public String start(@PathVariable("loginSessionId") UUID loginSessionId) {
+    public RegisterResponse start(@PathVariable("loginSessionId") UUID loginSessionId) {
         Account account = mapAccount.values().stream().filter(a -> a.getLoginSessionId().equals(loginSessionId))
                 .findAny().orElseGet(null);
+        RegisterResponse registerResponse;
         if (account != null) {
             if (!mapAccount.get(account.getLoginName()).getGameStatus()) {
                 UUID gameSessionId = UUID.randomUUID();
@@ -36,24 +37,27 @@ public class SessionController {
                 List<ResultGame> resultGames = new ArrayList<>(mapHistoryGames.get(account.getLoginName()));
                 resultGames.add(new ResultGame(account.getLoginName(), gameSessionId, 0, false));
                 mapHistoryGames.put(account.getLoginName(), resultGames);
-                return gameSessionId.toString();
+                registerResponse = new RegisterResponse(gameSessionId, "");
+                return registerResponse;
             } else{
-                return "Сначала закончите предыдущую игру!";
+                registerResponse = new RegisterResponse(null, "Сначала закончите предыдущую игру!");
+                return registerResponse;
             }
         }
-        return "Нужно сначала залогиниться.";
+        registerResponse = new RegisterResponse(null, "Нужно сначала залогиниться.");
+        return registerResponse;
     }
 
     @RequestMapping(value = "/register/{loginName}")
-    public String register(@PathVariable("loginName") String loginName) {
+    public RegisterResponse register(@PathVariable("loginName") String loginName) {
         if (!mapAccount.containsKey(loginName)) {
             UUID loginSessionId = UUID.randomUUID();
             mapAccount.put(loginName, new Account(loginName, loginSessionId,
                     true, false, null));
             mapHistoryGames.put(loginName, new ArrayList<>());
-            return "Добро пожаловать. " + loginSessionId;
+            return new RegisterResponse(loginSessionId, "Добро пожаловать. ");
         }
-        return "Логин уже сущетвует.";
+        return new RegisterResponse(null, "Логин уже сущетвует.");
     }
 
     @RequestMapping(value = "/login/{loginName}")
