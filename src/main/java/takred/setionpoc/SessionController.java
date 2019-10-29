@@ -88,16 +88,16 @@ public class SessionController {
     }
 
     @RequestMapping(value = "/guess/{gameSessionId}/{number}")
-    public String guess(@PathVariable("gameSessionId") UUID gameSessionId, @PathVariable("number") Integer number) {
+    public RegisterResponseGuess guess(@PathVariable("gameSessionId") UUID gameSessionId, @PathVariable("number") Integer number) {
         Account account = mapAccount.values().stream().filter(a -> a.getGameSessionId().equals(gameSessionId)).findAny().orElseGet(null);
         if (mapSession.containsKey(gameSessionId)) {
             Session session = mapSession.get(gameSessionId);
             mapSession.put(gameSessionId, session.
                     setCountLogin(session.getCountLogin() + 1));
             if (session.getRandomNumber() > number) {
-                return "Число больше.";
+                return new RegisterResponseGuess(">", "Число больше.");
             } else if (session.getRandomNumber() < number) {
-                return "Число меньше.";
+                return new RegisterResponseGuess("<", "Число меньше.");
             } else {
                 mapAccount.put(account.getLoginName(),account.setGameStatus(false));
                 Integer count = session.getCountLogin();
@@ -105,10 +105,10 @@ public class SessionController {
                 resultGames.set(resultGames.size() - 1, mapHistoryGames.get(account.getLoginName()).get(resultGames.size() - 1).setAttempts(count));
                 mapHistoryGames.put(account.getLoginName(), resultGames);
                 terminate(gameSessionId);
-                return "Угадал за " + count.toString() + ".";
+                return new RegisterResponseGuess("=", "Угадал за " + count.toString() + ".");
             }
         } else {
-            return "Session does not exist";
+            return new RegisterResponseGuess(null, "Session does not exist");
         }
     }
 
