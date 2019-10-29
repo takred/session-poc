@@ -4,12 +4,12 @@ import java.util.UUID;
 
 public class Session {
     private final UUID gameSessionId;
-    private final Integer countLogin;
+    private final Integer countTry;
     private final Integer randomNumber;
 
-    public Session(UUID gameSessionId, Integer countLogin, Integer randomNumber) {
+    public Session(UUID gameSessionId, Integer countTry, Integer randomNumber) {
         this.gameSessionId = gameSessionId;
-        this.countLogin = countLogin;
+        this.countTry = countTry;
         this.randomNumber = randomNumber;
     }
 
@@ -18,15 +18,15 @@ public class Session {
     }
 
     public Session setGameSessionId(UUID gameSessionId) {
-        return new Session(gameSessionId, countLogin, randomNumber);
+        return new Session(gameSessionId, countTry, randomNumber);
     }
 
-    public Integer getCountLogin() {
-        return countLogin;
+    public Integer getCountTry() {
+        return countTry;
     }
 
-    public Session setCountLogin(Integer countLogin) {
-        return new Session(gameSessionId, countLogin, randomNumber);
+    public Session setCountTry(Integer countTry) {
+        return new Session(gameSessionId, countTry, randomNumber);
     }
 
     public Integer getRandomNumber() {

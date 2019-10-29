@@ -82,7 +82,7 @@ public class SessionController {
     @RequestMapping(value = "/count/{id}")
     public String count(@PathVariable("id") UUID id) {
         if (mapSession.containsKey(id)) {
-            return mapSession.get(id).getCountLogin().toString();
+            return mapSession.get(id).getCountTry().toString();
         }
         return "Session does not exist";
     }
@@ -93,22 +93,22 @@ public class SessionController {
         if (mapSession.containsKey(gameSessionId)) {
             Session session = mapSession.get(gameSessionId);
             mapSession.put(gameSessionId, session.
-                    setCountLogin(session.getCountLogin() + 1));
+                    setCountTry(session.getCountTry() + 1));
             if (session.getRandomNumber() > number) {
-                return new RegisterResponseGuess(">", "Число больше.");
+                return new RegisterResponseGuess(">", mapSession.get(gameSessionId).getCountTry(), "Число больше.");
             } else if (session.getRandomNumber() < number) {
-                return new RegisterResponseGuess("<", "Число меньше.");
+                return new RegisterResponseGuess("<", mapSession.get(gameSessionId).getCountTry(), "Число меньше.");
             } else {
                 mapAccount.put(account.getLoginName(),account.setGameStatus(false));
-                Integer count = session.getCountLogin();
+                Integer count = session.getCountTry();
                 List<ResultGame> resultGames = new ArrayList<>(mapHistoryGames.get(account.getLoginName()));
                 resultGames.set(resultGames.size() - 1, mapHistoryGames.get(account.getLoginName()).get(resultGames.size() - 1).setAttempts(count));
                 mapHistoryGames.put(account.getLoginName(), resultGames);
                 terminate(gameSessionId);
-                return new RegisterResponseGuess("=", "Угадал за " + count.toString() + ".");
+                return new RegisterResponseGuess("=", count, "Угадал за " + count.toString() + ".");
             }
         } else {
-            return new RegisterResponseGuess(null, "Session does not exist");
+            return new RegisterResponseGuess(null, null, "Session does not exist");
         }
     }
 
@@ -158,7 +158,7 @@ public class SessionController {
                     List<ResultGame> resultGames = new ArrayList<>(mapHistoryGames.get(loginName));
                     resultGames.set(resultGames.size() - 1,
                             new ResultGame(loginName, account.getGameSessionId(),
-                                    mapSession.get(account.getGameSessionId()).getCountLogin(),
+                                    mapSession.get(account.getGameSessionId()).getCountTry(),
                                     resultGames.get(resultGames.size() - 1).getWin()));
                     mapHistoryGames.put(loginName, resultGames);
                     terminate(account.getGameSessionId());
