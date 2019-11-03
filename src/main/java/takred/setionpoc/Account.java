@@ -7,7 +7,7 @@ public class Account {
     private final UUID loginSessionId;
     private final boolean loginStatus;
     private final boolean gameStatus;
-    private UUID gameSessionId;
+    private final UUID gameSessionId;
 
     public Account(String loginName, UUID loginSessionId, boolean loginStatus, boolean gameStatus, UUID gameSessionId) {
         this.loginName = loginName;
@@ -29,7 +29,7 @@ public class Account {
         return loginSessionId;
     }
 
-    public Account setLoginSessionId(UUID loginSessionId) {
+    public Account withLoginSessionId(UUID loginSessionId) {
         return new Account(loginName, loginSessionId, loginStatus, gameStatus, gameSessionId);
     }
 
@@ -37,7 +37,7 @@ public class Account {
         return loginStatus;
     }
 
-    public Account setLoginStatus(boolean loginStatus) {
+    public Account withLoginStatus(boolean loginStatus) {
         return new Account(loginName, loginSessionId, loginStatus, gameStatus, gameSessionId);
     }
 
@@ -45,7 +45,7 @@ public class Account {
         return gameStatus;
     }
 
-    public Account setGameStatus(boolean gameStatus) {
+    public Account withGameStatus(boolean gameStatus) {
         return new Account(loginName, loginSessionId, loginStatus, gameStatus, gameSessionId);
     }
 
@@ -53,7 +53,7 @@ public class Account {
         return gameSessionId;
     }
 
-    public Account setGameSessionId(UUID gameSessionId) {
+    public Account withGameSessionId(UUID gameSessionId) {
         return new Account(loginName, loginSessionId, loginStatus, gameStatus, gameSessionId);
     }
 }

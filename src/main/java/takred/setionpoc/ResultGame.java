@@ -23,11 +23,11 @@ public class ResultGame {
         return gameSessionId;
     }
 
-    public ResultGame setGameSessionId(UUID gameSessionId) {
+    public ResultGame withGameSessionId(UUID gameSessionId) {
         return  new ResultGame(loginName, gameSessionId, attempts, win);
     }
 
-    public ResultGame setLoginName(String loginName) {
+    public ResultGame withLoginName(String loginName) {
         return  new ResultGame(loginName, gameSessionId, attempts, win);
     }
 
@@ -35,7 +35,7 @@ public class ResultGame {
         return attempts;
     }
 
-    public ResultGame setAttempts(Integer attempts) {
+    public ResultGame withAttempts(Integer attempts) {
         return  new ResultGame(loginName, gameSessionId, attempts, win);
     }
 
@@ -43,7 +43,7 @@ public class ResultGame {
         return win;
     }
 
-    public ResultGame setWin(boolean win) {
+    public ResultGame withWin(boolean win) {
         return  new ResultGame(loginName, gameSessionId, attempts, win);
     }
 }

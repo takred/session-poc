@@ -17,7 +17,7 @@ public class Session {
         return gameSessionId;
     }
 
-    public Session setGameSessionId(UUID gameSessionId) {
+    public Session withGameSessionId(UUID gameSessionId) {
         return new Session(gameSessionId, countTry, randomNumber);
     }
 
@@ -25,7 +25,7 @@ public class Session {
         return countTry;
     }
 
-    public Session setCountTry(Integer countTry) {
+    public Session withCountTry(Integer countTry) {
         return new Session(gameSessionId, countTry, randomNumber);
     }
 
