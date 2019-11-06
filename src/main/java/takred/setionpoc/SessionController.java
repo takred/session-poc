@@ -107,7 +107,7 @@ public class SessionController {
                 mapAccount.put(account.getLoginName(),account.withGameStatus(false));
                 Integer count = session.getCountTry();
                 List<ResultGame> resultGames = new ArrayList<>(mapHistoryGames.get(account.getLoginName()));
-                resultGames.set(resultGames.size() - 1, mapHistoryGames.get(account.getLoginName()).get(resultGames.size() - 1).withAttempts(count));
+                resultGames.set(resultGames.size() - 1, new ResultGame(account.getLoginName(),account.getGameSessionId(), count, true));
                 mapHistoryGames.put(account.getLoginName(), resultGames);
                 terminate(gameSessionId);
                 return new RegisterResponseGuess("=", count, "Угадал за " + count.toString() + ".");
