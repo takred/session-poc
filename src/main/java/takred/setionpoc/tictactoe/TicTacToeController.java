@@ -12,28 +12,14 @@ import java.util.Scanner;
 @RequestMapping(value = "/tic_tac_toe")
 public class TicTacToeController {
     private boolean symbol = true;
-    private List<List<String>> table = new ArrayList<>(3);
+    private List<List<String>> table;
 
     public void fill() {
         table = new ArrayList<>(3);
-        List<String> template = new ArrayList<>();
-        template.add(" ");
-        template.add(" ");
-        template.add(" ");
-        table.add(template);
-        template = new ArrayList<>();
-        template.add(" ");
-        template.add(" ");
-        template.add(" ");
-        table.add(template);
-        template = new ArrayList<>();
-        template.add(" ");
-        template.add(" ");
-        template.add(" ");
-        table.add(template);
-        template = new ArrayList<>();
-        template.add("");
-        table.add(template);
+        table.add(new ArrayList<>(List.of(" ", " ", " ")));
+        table.add(new ArrayList<>(List.of(" ", " ", " ")));
+        table.add(new ArrayList<>(List.of(" ", " ", " ")));
+        table.add(new ArrayList<>(List.of("")));
     }
 
     @RequestMapping(value = "/play")
@@ -76,7 +62,7 @@ public class TicTacToeController {
         for (int i = 0; i < symbols.size(); i++) {
             if (table.get(0).get(0).equals(symbols.get(i)) &&
                     table.get(0).get(1).equals(symbols.get(i)) &&
-                    table.get(0).get(0).equals(symbols.get(i)) ||
+                    table.get(0).get(2).equals(symbols.get(i)) ||
                     table.get(1).get(0).equals(symbols.get(i)) &&
                             table.get(1).get(1).equals(symbols.get(i)) &&
                             table.get(1).get(2).equals(symbols.get(i)) ||
