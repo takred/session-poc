@@ -13,6 +13,8 @@ import java.util.Scanner;
 public class TicTacToeController {
     private boolean symbol = true;
     private List<List<String>> table;
+    public List<String> resultGame = new ArrayList<>();
+    private int countGame = 0;
 
     public void fill() {
         table = new ArrayList<>(3);
@@ -33,6 +35,8 @@ public class TicTacToeController {
         if (table.get(3).get(0).equals("Выиграли крестики.") ||
                 table.get(3).get(0).equals("Выиграли нолики.") ||
                 table.get(3).get(0).equals("Ничья.")) {
+//            countGame++;
+            resultGame.add(table.get(3).get(0));
             return table;
         }
         table.get(3).set(0, "");
@@ -53,6 +57,17 @@ public class TicTacToeController {
             table.get(3).set(0, "Таких координат не существует. (поле 3 на 3 клетки).");
             return table;
         }
+    }
+
+    @RequestMapping(value = "/history")
+    public String history(){
+        return "Сыграно " + countGame + " раз." +
+                "Выберите игру, чтобы посмотреть результаты.";
+    }
+
+    @RequestMapping(value = "/history/{number}")
+    public String resultGame(@PathVariable ("number") int number){
+        return resultGame.get(number - 1);
     }
 
     public List<List<String>> winner() {
@@ -86,9 +101,13 @@ public class TicTacToeController {
                             table.get(2).get(0).equals(symbols.get(i))) {
                 if (symbols.get(i).equals("x")) {
                     table.get(3).set(0, "Выиграли крестики.");
+                    resultGame.add(table.get(3).get(0));
+                    countGame++;
                     return table;
                 } else if (symbols.get(i).equals("o")) {
                     table.get(3).set(0, "Выиграли нолики.");
+                    resultGame.add(table.get(3).get(0));
+                    countGame++;
                     return table;
                 }
             }
@@ -104,6 +123,8 @@ public class TicTacToeController {
         }
         if (fullness) {
             table.get(3).set(0, "Ничья.");
+            resultGame.add(table.get(3).get(0));
+            countGame++;
             return table;
         }
         return table;
@@ -115,4 +136,6 @@ public class TicTacToeController {
         }
         return false;
     }
+
+
 }
