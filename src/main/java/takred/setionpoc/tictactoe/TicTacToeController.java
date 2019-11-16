@@ -32,6 +32,7 @@ public class TicTacToeController {
 
     @RequestMapping(value = "/play/{x}/{y}")
     public List<List<String>> game(@PathVariable("x") int x, @PathVariable("y") int y) {
+
         if (table.get(3).get(0).equals("Выиграли крестики.") ||
                 table.get(3).get(0).equals("Выиграли нолики.") ||
                 table.get(3).get(0).equals("Ничья.")) {

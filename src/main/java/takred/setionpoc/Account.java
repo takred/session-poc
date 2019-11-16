@@ -7,14 +7,17 @@ public class Account {
     private final UUID loginSessionId;
     private final boolean loginStatus;
     private final boolean gameStatus;
-    private final UUID gameSessionId;
+    private final UUID sessionIdGuess;
+    private final UUID sessionIdTicTacTo;
 
-    public Account(String loginName, UUID loginSessionId, boolean loginStatus, boolean gameStatus, UUID gameSessionId) {
+
+    public Account(String loginName, UUID loginSessionId, boolean loginStatus, boolean gameStatus, UUID sessionIdGuess, UUID sessionIdTicTacTo) {
         this.loginName = loginName;
         this.loginSessionId = loginSessionId;
         this.loginStatus = loginStatus;
         this.gameStatus = gameStatus;
-        this.gameSessionId = gameSessionId;
+        this.sessionIdGuess = sessionIdGuess;
+        this.sessionIdTicTacTo = sessionIdTicTacTo;
     }
 
     public String getLoginName() {
@@ -22,7 +25,7 @@ public class Account {
     }
 
     public Account setLoginName(String loginName) {
-        return new Account(loginName, loginSessionId, loginStatus, gameStatus, gameSessionId);
+        return new Account(loginName, loginSessionId, loginStatus, gameStatus, sessionIdGuess, sessionIdTicTacTo);
     }
 
     public UUID getLoginSessionId() {
@@ -30,7 +33,7 @@ public class Account {
     }
 
     public Account withLoginSessionId(UUID loginSessionId) {
-        return new Account(loginName, loginSessionId, loginStatus, gameStatus, gameSessionId);
+        return new Account(loginName, loginSessionId, loginStatus, gameStatus, sessionIdGuess, sessionIdTicTacTo);
     }
 
     public boolean getLoginStatus() {
@@ -38,7 +41,7 @@ public class Account {
     }
 
     public Account withLoginStatus(boolean loginStatus) {
-        return new Account(loginName, loginSessionId, loginStatus, gameStatus, gameSessionId);
+        return new Account(loginName, loginSessionId, loginStatus, gameStatus, sessionIdGuess, sessionIdTicTacTo);
     }
 
     public boolean getGameStatus() {
@@ -46,14 +49,22 @@ public class Account {
     }
 
     public Account withGameStatus(boolean gameStatus) {
-        return new Account(loginName, loginSessionId, loginStatus, gameStatus, gameSessionId);
+        return new Account(loginName, loginSessionId, loginStatus, gameStatus, sessionIdGuess , sessionIdTicTacTo);
     }
 
-    public UUID getGameSessionId() {
-        return gameSessionId;
+    public UUID getSessionIdGuess() {
+        return sessionIdGuess;
     }
 
-    public Account withGameSessionId(UUID gameSessionId) {
-        return new Account(loginName, loginSessionId, loginStatus, gameStatus, gameSessionId);
+    public Account withSessionIdGuess(UUID sessionIdGuess) {
+        return new Account(loginName, loginSessionId, loginStatus, gameStatus, sessionIdGuess, sessionIdTicTacTo);
+    }
+
+    public UUID getSessionIdTicTacToe() {
+        return sessionIdTicTacTo;
+    }
+
+    public Account withSessionIdTicTacToe(UUID sessionIdTicTacTo) {
+        return new Account(loginName, loginSessionId, loginStatus, gameStatus, sessionIdGuess, sessionIdTicTacTo);
     }
 }
