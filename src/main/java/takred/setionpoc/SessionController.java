@@ -11,21 +11,23 @@ import java.util.concurrent.ThreadLocalRandom;
 @RequestMapping(value = "/")
 public class SessionController {
 //    private Map<UUID, SessionGuess> mapSessionGuess = new HashMap<>();
-    private Map<UUID, SessionTicTacToe> mapSessionTicTacToe = new HashMap<>();
+//    private Map<UUID, SessionTicTacToe> mapSessionTicTacToe = new HashMap<>();
     private final AccountService accountService;
     private final GuessService guessService;
+    private final TicTacToeService ticTacToeService;
     private Map<String, Account> mapAccountTicTacToe = new HashMap<>();
 //    private Map<String, List<ResultGuess>> mapHistoryGuess = new HashMap<>();
-    private Map<String, List<ResultTicTacToe>> mapHistoryTicTacToe = new HashMap<>();
+//    private Map<String, List<ResultTicTacToe>> mapHistoryTicTacToe = new HashMap<>();
 
     private boolean symbol = true;
     private List<List<String>> table;
     public List<String> resultGame = new ArrayList<>();
     private int countGame = 0;
 
-    public SessionController(AccountService accountService, GuessService guessService) {
+    public SessionController(AccountService accountService, GuessService guessService, TicTacToeService ticTacToeService) {
         this.accountService = accountService;
         this.guessService = guessService;
+        this.ticTacToeService = ticTacToeService;
     }
     private Map<UUID, SessionGuess> getMapSessionGuess(){
         return guessService.getMapSessionGuess();
@@ -33,6 +35,14 @@ public class SessionController {
 
     private Map<String, List<ResultGuess>> getMapHistoryGuess(){
         return guessService.getMapHistoryGuess();
+    }
+
+    private Map<UUID, SessionTicTacToe> getMapSessionTicTacToe() {
+        return ticTacToeService.getMapSessionTicTacToe();
+    }
+
+    private Map<String, List<ResultTicTacToe>> getMapHistoryTicTacToe() {
+        return ticTacToeService.getMapHistoryTicTacToe();
     }
 
     private Map<String, Account> getMapAccount() {
@@ -240,7 +250,7 @@ public class SessionController {
             if (!firstAccount.getGameStatus() && !secondAccount.getGameStatus()) {
                 UUID gameSessionId = UUID.randomUUID();
 
-                mapSessionTicTacToe.put(gameSessionId,
+                getMapSessionTicTacToe().put(gameSessionId,
                         new SessionTicTacToe(gameSessionId, nameFirstPlayer, nameSecondPlayer, true));
                 getMapAccount().put(nameFirstPlayer
                         , new Account(
@@ -250,12 +260,12 @@ public class SessionController {
                         )
                 );
 
-                List<ResultTicTacToe> resultTicTacToe = new ArrayList<>(mapHistoryTicTacToe.get(firstAccount.getLoginName()));
+                List<ResultTicTacToe> resultTicTacToe = new ArrayList<>(getMapHistoryTicTacToe().get(firstAccount.getLoginName()));
                 resultTicTacToe.add(new ResultTicTacToe(gameSessionId, firstAccount.getLoginName(),
                         secondAccount.getLoginName(), "", ""));
-                mapHistoryTicTacToe.put(firstAccount.getLoginName(), resultTicTacToe);
+                getMapHistoryTicTacToe().put(firstAccount.getLoginName(), resultTicTacToe);
 
-                mapSessionTicTacToe.put(gameSessionId,
+                getMapSessionTicTacToe().put(gameSessionId,
                         new SessionTicTacToe(gameSessionId, nameFirstPlayer, nameSecondPlayer, true));
                 getMapAccount().put(nameSecondPlayer,
                         new Account(
@@ -265,10 +275,10 @@ public class SessionController {
                         )
                 );
 
-                resultTicTacToe = new ArrayList<>(mapHistoryTicTacToe.get(secondAccount.getLoginName()));
+                resultTicTacToe = new ArrayList<>(getMapHistoryTicTacToe().get(secondAccount.getLoginName()));
                 resultTicTacToe.add(new ResultTicTacToe(gameSessionId, firstAccount.getLoginName(),
                         secondAccount.getLoginName(), "", ""));
-                mapHistoryTicTacToe.put(secondAccount.getLoginName(), resultTicTacToe);
+                getMapHistoryTicTacToe().put(secondAccount.getLoginName(), resultTicTacToe);
                 registerResponse = new RegisterResponse(gameSessionId, "");
                 newGame();
 
@@ -301,7 +311,7 @@ public class SessionController {
                                    @PathVariable("login") String login,
                                    @PathVariable("x") int x,
                                    @PathVariable("y") int y) {
-        if (!mapSessionTicTacToe.containsKey(sessionIdTicTacToe)) {
+        if (!getMapSessionTicTacToe().containsKey(sessionIdTicTacToe)) {
 //            return new RegisterResponseGuess(null, null, "Session does not exist");
             return null;
         }
@@ -316,7 +326,7 @@ public class SessionController {
             return table;
 //                    "В ткущей сессии этот игрок не участвует."
         }
-        String endMessage = mapHistoryTicTacToe.get(login).get(mapHistoryTicTacToe.get(login).size() - 1).getEndMessage();
+        String endMessage = getMapHistoryTicTacToe().get(login).get(getMapHistoryTicTacToe().get(login).size() - 1).getEndMessage();
         if (endMessage.equals("Выиграли крестики.") ||
                 table.get(3).get(0).equals("Выиграли нолики.") ||
                 table.get(3).get(0).equals("Ничья.")) {
@@ -332,20 +342,20 @@ public class SessionController {
             table.get(3).set(0, "Эта клетка занята. Введите другие координаты.");
             return table;
         }
-        if (mapSessionTicTacToe.get(sessionIdTicTacToe).getCurrentMove()) {
+        if (getMapSessionTicTacToe().get(sessionIdTicTacToe).getCurrentMove()) {
             table.get(x - 1).set(y - 1, "x");
 
         } else {
             table.get(x - 1).set(y - 1, "o");
         }
-        winner(mapSessionTicTacToe.get(sessionIdTicTacToe).getCurrentMove(),
-                mapSessionTicTacToe.get(sessionIdTicTacToe).getNameFirstPlayer(),
-                mapSessionTicTacToe.get(sessionIdTicTacToe).getNameSecondPlayer());
-        mapSessionTicTacToe.put(sessionIdTicTacToe, mapSessionTicTacToe.get(sessionIdTicTacToe).
-                withCurrentMove(!mapSessionTicTacToe.get(sessionIdTicTacToe).getCurrentMove()));
+        winner(getMapSessionTicTacToe().get(sessionIdTicTacToe).getCurrentMove(),
+                getMapSessionTicTacToe().get(sessionIdTicTacToe).getNameFirstPlayer(),
+                getMapSessionTicTacToe().get(sessionIdTicTacToe).getNameSecondPlayer());
+        getMapSessionTicTacToe().put(sessionIdTicTacToe, getMapSessionTicTacToe().get(sessionIdTicTacToe).
+                withCurrentMove(!getMapSessionTicTacToe().get(sessionIdTicTacToe).getCurrentMove()));
 //                            symbol = !symbol;
-        String firstPlayer = mapHistoryTicTacToe.get(login).get(mapHistoryTicTacToe.get(login).size() - 1).getNameFirstPlayer();
-        String secondPlayer = mapHistoryTicTacToe.get(login).get(mapHistoryTicTacToe.get(login).size() - 1).getNameSecondPlayer();
+        String firstPlayer = getMapHistoryTicTacToe().get(login).get(getMapHistoryTicTacToe().get(login).size() - 1).getNameFirstPlayer();
+        String secondPlayer = getMapHistoryTicTacToe().get(login).get(getMapHistoryTicTacToe().get(login).size() - 1).getNameSecondPlayer();
 
 //        List<ResultTicTacToe> resultTicTacToe = new ArrayList<>(mapHistoryTicTacToe.get(firstPlayer));
 //        ResultTicTacToe currentSession = resultTicTacToe.get(resultTicTacToe.size() - 1);
@@ -365,8 +375,8 @@ public class SessionController {
 
     @RequestMapping(value = "/tic_tac_toe/users/{userName}/history")
     public String historyTicTacToe(@PathVariable("userName") String userName) {
-        if (mapHistoryTicTacToe.containsKey(userName)) {
-            Integer countGames = mapHistoryTicTacToe.get(userName).size();
+        if (getMapHistoryTicTacToe().containsKey(userName)) {
+            Integer countGames = getMapHistoryTicTacToe().get(userName).size();
             return countGames.toString() + " игры сыграно. Выберите нужную вам игру.";
         } else {
             return "Логин не найден.";
@@ -375,14 +385,14 @@ public class SessionController {
 
     @RequestMapping(value = "/tic_tac_toe/users/{userName}/history/{numberGame}")
     public String resultTicTacToe(@PathVariable("userName") String userName, @PathVariable("numberGame") int numberGame) {
-        if (mapHistoryTicTacToe.containsKey(userName)) {
-            if (mapHistoryTicTacToe.get(userName).size() >= numberGame && numberGame > 0) {
-                String result = "Играл " + mapHistoryTicTacToe.get(userName).get(numberGame - 1).getNameFirstPlayer() + " c "
-                        + mapHistoryTicTacToe.get(userName).get(numberGame - 1).getNameSecondPlayer() + ".";
+        if (getMapHistoryTicTacToe().containsKey(userName)) {
+            if (getMapHistoryTicTacToe().get(userName).size() >= numberGame && numberGame > 0) {
+                String result = "Играл " + getMapHistoryTicTacToe().get(userName).get(numberGame - 1).getNameFirstPlayer() + " c "
+                        + getMapHistoryTicTacToe().get(userName).get(numberGame - 1).getNameSecondPlayer() + ".";
 //                if (mapHistoryTicTacToe.get(userName).get(numberGame - 1).getWinner().
 //                        equals(mapHistoryTicTacToe.get(userName).get(numberGame - 1).getNameFirstPlayer())) {
-                    return result + " Победил " + mapHistoryTicTacToe.get(userName).get(numberGame - 1).getWinner() + ". " +
-                            mapHistoryTicTacToe.get(userName).get(numberGame - 1).getEndMessage();
+                    return result + " Победил " + getMapHistoryTicTacToe().get(userName).get(numberGame - 1).getWinner() + ". " +
+                            getMapHistoryTicTacToe().get(userName).get(numberGame - 1).getEndMessage();
 //                } else if (mapHistoryTicTacToe.get(userName).get(numberGame - 1).getWinner().
 //                        equals(mapHistoryTicTacToe.get(userName).get(numberGame - 1).getNameSecondPlayer())){
 //                    return result + " Победил " + mapHistoryTicTacToe.get(userName).get(numberGame - 1).getWinner() + ".";
@@ -454,44 +464,44 @@ public class SessionController {
                         table.get(1).get(1).equals(symbol) &&
                         table.get(2).get(0).equals(symbol)) {
             if (symbol.equals("x")) {
-                List<ResultTicTacToe> resultTicTacToe = new ArrayList<>(mapHistoryTicTacToe.get(firstPlayer));
+                List<ResultTicTacToe> resultTicTacToe = new ArrayList<>(getMapHistoryTicTacToe().get(firstPlayer));
                 ResultTicTacToe currentSession = resultTicTacToe.get(resultTicTacToe.size() - 1);
                 resultTicTacToe.set(resultTicTacToe.size() - 1, new ResultTicTacToe(currentSession.getSessionIdTicTacToe(),
                         firstPlayer,
                         secondPlayer,
                         winner,
                         "Выиграли крестики."));
-                mapHistoryTicTacToe.put(firstPlayer, resultTicTacToe);
-                resultTicTacToe = new ArrayList<>(mapHistoryTicTacToe.get(secondPlayer));
+                getMapHistoryTicTacToe().put(firstPlayer, resultTicTacToe);
+                resultTicTacToe = new ArrayList<>(getMapHistoryTicTacToe().get(secondPlayer));
                 currentSession = resultTicTacToe.get(resultTicTacToe.size() - 1);
                 resultTicTacToe.set(resultTicTacToe.size() - 1, new ResultTicTacToe(currentSession.getSessionIdTicTacToe(),
                         firstPlayer,
                         secondPlayer,
                         winner,
                         "Выиграли крестики."));
-                mapHistoryTicTacToe.put(secondPlayer, resultTicTacToe);
+                getMapHistoryTicTacToe().put(secondPlayer, resultTicTacToe);
 
                 table.get(3).set(0, "Выиграли крестики.");
                 resultGame.add(table.get(3).get(0));
                 countGame++;
 //                return "Выиграли крестики.";
             } else {
-                List<ResultTicTacToe> resultTicTacToe = new ArrayList<>(mapHistoryTicTacToe.get(firstPlayer));
+                List<ResultTicTacToe> resultTicTacToe = new ArrayList<>(getMapHistoryTicTacToe().get(firstPlayer));
                 ResultTicTacToe currentSession = resultTicTacToe.get(resultTicTacToe.size() - 1);
                 resultTicTacToe.set(resultTicTacToe.size() - 1, new ResultTicTacToe(currentSession.getSessionIdTicTacToe(),
                         firstPlayer,
                         secondPlayer,
                         winner,
                         "Выиграли нолики."));
-                mapHistoryTicTacToe.put(firstPlayer, resultTicTacToe);
-                resultTicTacToe = new ArrayList<>(mapHistoryTicTacToe.get(secondPlayer));
+                getMapHistoryTicTacToe().put(firstPlayer, resultTicTacToe);
+                resultTicTacToe = new ArrayList<>(getMapHistoryTicTacToe().get(secondPlayer));
                 currentSession = resultTicTacToe.get(resultTicTacToe.size() - 1);
                 resultTicTacToe.set(resultTicTacToe.size() - 1, new ResultTicTacToe(currentSession.getSessionIdTicTacToe(),
                         firstPlayer,
                         secondPlayer,
                         winner,
                         "Выиграли нолики."));
-                mapHistoryTicTacToe.put(secondPlayer, resultTicTacToe);
+                getMapHistoryTicTacToe().put(secondPlayer, resultTicTacToe);
 
                 table.get(3).set(0, "Выиграли нолики.");
                 resultGame.add(table.get(3).get(0));
@@ -509,14 +519,14 @@ public class SessionController {
         }
         if (fullness) {
             winner = "Ничья";
-            List<ResultTicTacToe> resultTicTacToe = new ArrayList<>(mapHistoryTicTacToe.get(firstPlayer));
+            List<ResultTicTacToe> resultTicTacToe = new ArrayList<>(getMapHistoryTicTacToe().get(firstPlayer));
             ResultTicTacToe currentSession = resultTicTacToe.get(resultTicTacToe.size() - 1);
             resultTicTacToe.set(resultTicTacToe.size() - 1, new ResultTicTacToe(currentSession.getSessionIdTicTacToe(),
                     firstPlayer,
                     secondPlayer,
                     winner,
                     "Ничья."));
-            resultTicTacToe = new ArrayList<>(mapHistoryTicTacToe.get(secondPlayer));
+            resultTicTacToe = new ArrayList<>(getMapHistoryTicTacToe().get(secondPlayer));
             currentSession = resultTicTacToe.get(resultTicTacToe.size() - 1);
             resultTicTacToe.set(resultTicTacToe.size() - 1, new ResultTicTacToe(currentSession.getSessionIdTicTacToe(),
                     firstPlayer,

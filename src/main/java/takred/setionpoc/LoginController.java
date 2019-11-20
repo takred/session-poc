@@ -13,10 +13,16 @@ public class LoginController {
 
     private final AccountService accountService;
     private final GuessService guessService;
+    private final TicTacToeService ticTacToeService;
 
-    public LoginController(AccountService accountService, GuessService guessService) {
+    public LoginController(AccountService accountService, GuessService guessService, TicTacToeService ticTacToeService) {
         this.accountService = accountService;
         this.guessService = guessService;
+        this.ticTacToeService = ticTacToeService;
+    }
+
+    private Map<String, List<ResultTicTacToe>> getMapHistoryTicTacToe() {
+        return ticTacToeService.getMapHistoryTicTacToe();
     }
 
     private Map<String, List<ResultGuess>> getMapHistoryGuess(){
@@ -30,7 +36,7 @@ public class LoginController {
             accountService.getMapAccount().put(loginName, new Account(loginName, loginSessionId,
                     true, false, null, null));
             getMapHistoryGuess().put(loginName, new ArrayList<>());
-//            mapHistoryTicTacToe.put(loginName, new ArrayList<>());
+            getMapHistoryTicTacToe().put(loginName, new ArrayList<>());
             return new RegisterResponse(loginSessionId, "Добро пожаловать. ");
         }
         return new RegisterResponse(null, "Логин уже сущетвует.");
