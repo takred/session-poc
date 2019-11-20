@@ -1,8 +1,7 @@
-package takred.setionpoc;
+package takred.setionpoc.tictactoe;
 
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
+import takred.setionpoc.*;
 
 import java.util.*;
 

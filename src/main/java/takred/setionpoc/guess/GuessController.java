@@ -1,33 +1,21 @@
-package takred.setionpoc;
+package takred.setionpoc.guess;
 
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import takred.setionpoc.*;
 
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
 
 @RestController
-@RequestMapping(value = "/")
-public class SessionController {
-//    private Map<UUID, SessionGuess> mapSessionGuess = new HashMap<>();
-//    private Map<UUID, SessionTicTacToe> mapSessionTicTacToe = new HashMap<>();
+@RequestMapping(value = "/guess")
+public class GuessController {
     private final AccountService accountService;
     private final GuessService guessService;
-    private final TicTacToeService ticTacToeService;
-    private Map<String, Account> mapAccountTicTacToe = new HashMap<>();
-//    private Map<String, List<ResultGuess>> mapHistoryGuess = new HashMap<>();
-//    private Map<String, List<ResultTicTacToe>> mapHistoryTicTacToe = new HashMap<>();
 
-    private boolean symbol = true;
-    private List<List<String>> table;
-    public List<String> resultGame = new ArrayList<>();
-    private int countGame = 0;
-
-    public SessionController(AccountService accountService, GuessService guessService, TicTacToeService ticTacToeService) {
+    public GuessController(AccountService accountService, GuessService guessService) {
         this.accountService = accountService;
         this.guessService = guessService;
-        this.ticTacToeService = ticTacToeService;
     }
     private Map<UUID, SessionGuess> getMapSessionGuess(){
         return guessService.getMapSessionGuess();
@@ -37,158 +25,39 @@ public class SessionController {
         return guessService.getMapHistoryGuess();
     }
 
-    private Map<UUID, SessionTicTacToe> getMapSessionTicTacToe() {
-        return ticTacToeService.getMapSessionTicTacToe();
-    }
-
-    private Map<String, List<ResultTicTacToe>> getMapHistoryTicTacToe() {
-        return ticTacToeService.getMapHistoryTicTacToe();
-    }
-
     private Map<String, Account> getMapAccount() {
         return accountService.getMapAccount();
     }
 
-    @RequestMapping(value = "/start_guess/{loginSessionId}")
+    @RequestMapping(value = "/start/{loginSessionId}")
     public RegisterResponse startGuess(@PathVariable("loginSessionId") UUID loginSessionId) {
-        Account account = getMapAccount().values().stream()
-                .filter(a -> a.getLoginSessionId() != null)
-                .filter(a -> a.getLoginSessionId()
-                        .equals(loginSessionId))
-                .findAny().orElseGet(null);
-        RegisterResponse registerResponse;
-        if (account != null) {
-            if (!getMapAccount().get(account.getLoginName()).getGameStatus()) {
-                UUID gameSessionId = UUID.randomUUID();
-                getMapSessionGuess().put(gameSessionId
-                        , new SessionGuess(
-                                gameSessionId, 0
-                                , ThreadLocalRandom.current().nextInt(0, 10000)
-                        )
-                );
-                getMapAccount().put(account.getLoginName()
-                        , new Account(
-                                account.getLoginName(), account.getLoginSessionId()
-                                , account.getLoginStatus(), true, gameSessionId, account.getSessionIdTicTacToe()
-                        )
-                );
-                List<ResultGuess> resultGuesses = new ArrayList<>(getMapHistoryGuess().get(account.getLoginName()));
-                resultGuesses.add(new ResultGuess(account.getLoginName(), gameSessionId, 0, false));
-                getMapHistoryGuess().put(account.getLoginName(), resultGuesses);
-                registerResponse = new RegisterResponse(gameSessionId, "");
-                return registerResponse;
-            } else {
-                registerResponse = new RegisterResponse(null, "Сначала закончите предыдущую игру!");
-                return registerResponse;
-            }
-        }
-        registerResponse = new RegisterResponse(null, "Нужно сначала залогиниться.");
-        return registerResponse;
+        return guessService.startGuess(loginSessionId);
     }
-
-//    @RequestMapping(value = "/register/{loginName}")
-//    public RegisterResponse register(@PathVariable("loginName") String loginName) {
-//        if (!getMapAccount().containsKey(loginName)) {
-//            UUID loginSessionId = UUID.randomUUID();
-//            getMapAccount().put(loginName, new Account(loginName, loginSessionId,
-//                    true, false, null, null));
-//            mapHistoryGuess.put(loginName, new ArrayList<>());
-//            mapHistoryTicTacToe.put(loginName, new ArrayList<>());
-//            return new RegisterResponse(loginSessionId, "Добро пожаловать. ");
-//        }
-//        return new RegisterResponse(null, "Логин уже сущетвует.");
-//    }
-//
-//    @RequestMapping(value = "/login/{loginName}")
-//    public RegisterResponse login(@PathVariable("loginName") String loginName) {
-//        Account account = getMapAccount().get(loginName);
-//        if (getMapAccount().containsKey(loginName)) {
-//            System.out.println(loginName + " " + account.getLoginStatus());
-//            if (!account.getLoginStatus()) {
-//                UUID loginSessionId = UUID.randomUUID();
-//                this.getMapAccount().put(loginName, account
-//                        .withLoginSessionId(loginSessionId)
-//                        .withLoginStatus(true)
-//                        .withGameStatus(false)
-//                );
-//                return new RegisterResponse(loginSessionId, "");
-//            } else {
-//                return new RegisterResponse(null, "Нужно сначала разлогиниться.");
-//            }
-//        }
-//        return new RegisterResponse(null, "Логин не найден.");
-//    }
 
     @RequestMapping(value = "/count/{id}")
     public String count(@PathVariable("id") UUID id) {
-        if (getMapSessionGuess().containsKey(id)) {
-            return getMapSessionGuess().get(id).getCountTry().toString();
-        }
-        return "Session does not exist";
+        return guessService.count(id);
     }
 
-    @RequestMapping(value = "/guess/{gameSessionId}/{number}")
+    @RequestMapping(value = "/play/{gameSessionId}/{number}")
     public RegisterResponseGuess guess(@PathVariable("gameSessionId") UUID gameSessionId,
                                        @PathVariable("number") Integer number) {
-
-        Account account = getMapAccount().values().stream().filter(a -> a.getSessionIdGuess() != null)
-                .filter(a -> a.getSessionIdGuess().equals(gameSessionId))
-                .findAny().orElseGet(null);
-        if (getMapSessionGuess().containsKey(gameSessionId)) {
-            SessionGuess session = getMapSessionGuess().get(gameSessionId);
-            getMapSessionGuess().put(gameSessionId, session.
-                    withCountTry(session.getCountTry() + 1));
-            if (session.getRandomNumber() > number) {
-                return new RegisterResponseGuess(">", getMapSessionGuess().get(gameSessionId).getCountTry(),
-                        "Число больше.");
-            } else if (session.getRandomNumber() < number) {
-                return new RegisterResponseGuess("<", getMapSessionGuess().get(gameSessionId).getCountTry(),
-                        "Число меньше.");
-            } else {
-                getMapAccount().put(account.getLoginName(), account.withGameStatus(false));
-                Integer count = session.getCountTry();
-                List<ResultGuess> resultGuesses = new ArrayList<>(getMapHistoryGuess().get(account.getLoginName()));
-                resultGuesses.set(resultGuesses.size() - 1, new ResultGuess(account.getLoginName(), account.getSessionIdGuess(), count, true));
-                getMapHistoryGuess().put(account.getLoginName(), resultGuesses);
-                terminate(gameSessionId);
-                return new RegisterResponseGuess("=", count, "Угадал за " + count.toString() + ".");
-            }
-        } else {
-            return new RegisterResponseGuess(null, null, "Session does not exist");
-        }
+        return guessService.guess(gameSessionId, number);
     }
 
     @RequestMapping(value = "/users")
     public List<Account> users() {
-        return new ArrayList<>(getMapAccount().values());
+        return guessService.users();
     }
 
     @RequestMapping(value = "/users/{userName}/history")
     public String historyGames(@PathVariable("userName") String userName) {
-        if (getMapHistoryGuess().containsKey(userName)) {
-            Integer countGames = getMapHistoryGuess().get(userName).size();
-            return countGames.toString() + " игры сыграно. Выберите нужную вам игру.";
-        } else {
-            return "Логин не найден.";
-        }
+        return guessService.historyGames(userName);
     }
 
     @RequestMapping(value = "/users/{userName}/history/{numberGame}")
     public String resultGame(@PathVariable("userName") String userName, @PathVariable("numberGame") int numberGame) {
-        if (getMapHistoryGuess().containsKey(userName)) {
-            if (getMapHistoryGuess().get(userName).size() >= numberGame && numberGame > 0) {
-                String result = "Сделано " + getMapHistoryGuess().get(userName).get(numberGame - 1).getAttempts().toString() + " попыток.";
-                if (getMapHistoryGuess().get(userName).get(numberGame - 1).getWin()) {
-                    return result + " Победа!";
-                } else {
-                    return result + " Игра прервана.";
-                }
-            } else {
-                return "Игры под таким номером нет.";
-            }
-        } else {
-            return "Логин не найден.";
-        }
+        return guessService.resultGame(userName, numberGame);
     }
 
     @RequestMapping(value = "/terminate/{id}")
@@ -199,43 +68,6 @@ public class SessionController {
         }
         return "Session does not exist";
     }
-
-//    @RequestMapping(value = "/logout/{loginName}")
-//    public logoutResponse logout(@PathVariable("loginName") String loginName) {
-//        System.out.println("Выход.");
-//        Account account = getMapAccount().get(loginName);
-//        if (getMapAccount().containsKey(loginName)) {
-//            if (account.getLoginStatus()) {
-//                if (account.getGameStatus()) {
-//                    List<ResultGuess> resultGuesses = new ArrayList<>(mapHistoryGuess.get(loginName));
-//                    resultGuesses.set(resultGuesses.size() - 1,
-//                            new ResultGuess(loginName, account.getSessionIdGuess(),
-//                                    mapSessionGuess.get(account.getSessionIdGuess()).getCountTry(),
-//                                    resultGuesses.get(resultGuesses.size() - 1).getWin()));
-//                    mapHistoryGuess.put(loginName, resultGuesses);
-//                    terminate(account.getSessionIdGuess());
-//                    this.getMapAccount().put(loginName, account
-//                            .withGameStatus(false)
-//                            .withSessionIdGuess(null)
-//                            .withLoginStatus(false)
-//                            .withLoginSessionId(null)
-//                    );
-//                    System.out.println("Вышло 1");
-//                    return new logoutResponse(true, "Игра прервана. Увидимся вновь!");
-//                } else {
-//                    System.out.println("Вышло 2");
-//                    getMapAccount().put(loginName, account.withLoginStatus(false));
-//                    return new logoutResponse(true, "До свидания!");
-//                }
-//            } else {
-//                System.out.println("Не вышло 3");
-//                return new logoutResponse(false, "Сначала надо войти.");
-//            }
-//        }
-//        System.out.println("Не вышло 4");
-//        return new logoutResponse(false, "Такого логина не существует.");
-//    }
-
 //    -----------------------------------------------------------------------------------------------------------------------
 //    -----------------------------------------------------------------------------------------------------------------------
 

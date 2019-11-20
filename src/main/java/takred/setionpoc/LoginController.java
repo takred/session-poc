@@ -1,9 +1,13 @@
 package takred.setionpoc;
 
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import takred.setionpoc.guess.GuessService;
+import takred.setionpoc.guess.ResultGuess;
+import takred.setionpoc.guess.SessionGuess;
+import takred.setionpoc.tictactoe.ResultTicTacToe;
+import takred.setionpoc.tictactoe.TicTacToeService;
 
 import java.util.*;
 @RestController

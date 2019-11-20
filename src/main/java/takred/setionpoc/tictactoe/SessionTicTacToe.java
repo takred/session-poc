@@ -1,4 +1,4 @@
-package takred.setionpoc;
+package takred.setionpoc.tictactoe;
 
 import java.util.UUID;
 
