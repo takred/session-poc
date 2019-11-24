@@ -10,11 +10,9 @@ import java.util.*;
 @RestController
 @RequestMapping(value = "/guess")
 public class GuessController {
-    private final AccountService accountService;
     private final GuessService guessService;
 
-    public GuessController(AccountService accountService, GuessService guessService) {
-        this.accountService = accountService;
+    public GuessController(GuessService guessService) {
         this.guessService = guessService;
     }
     private Map<UUID, SessionGuess> getMapSessionGuess(){
@@ -23,10 +21,6 @@ public class GuessController {
 
     private Map<String, List<ResultGuess>> getMapHistoryGuess(){
         return guessService.getMapHistoryGuess();
-    }
-
-    private Map<String, Account> getMapAccount() {
-        return accountService.getMapAccount();
     }
 
     @RequestMapping(value = "/start/{loginSessionId}")
