@@ -76,29 +76,30 @@ public class GuessService {
 
         Account account = getMapAccount().values().stream().filter(a -> a.getSessionIdGuess() != null)
                 .filter(a -> a.getSessionIdGuess().equals(gameSessionId))
-                .findAny().orElseGet(null);
-        if (getMapSessionGuess().containsKey(gameSessionId)) {
-            SessionGuess session = getMapSessionGuess().get(gameSessionId);
-            getMapSessionGuess().put(gameSessionId, session.
-                    withCountTry(session.getCountTry() + 1));
-            if (session.getRandomNumber() > number) {
-                return new RegisterResponseGuess(">", getMapSessionGuess().get(gameSessionId).getCountTry(),
-                        "Число больше.");
-            } else if (session.getRandomNumber() < number) {
-                return new RegisterResponseGuess("<", getMapSessionGuess().get(gameSessionId).getCountTry(),
-                        "Число меньше.");
-            } else {
-                getMapAccount().put(account.getLoginName(), account.withGameStatus(false));
-                Integer count = session.getCountTry();
-                List<ResultGuess> resultGuesses = new ArrayList<>(getMapHistoryGuess().get(account.getLoginName()));
-                resultGuesses.set(resultGuesses.size() - 1, new ResultGuess(account.getLoginName(), account.getSessionIdGuess(), count, true));
-                getMapHistoryGuess().put(account.getLoginName(), resultGuesses);
-                terminate(gameSessionId);
-                return new RegisterResponseGuess("=", count, "Угадал за " + count.toString() + ".");
+                .findAny().orElse(null);
+        if (account != null) {
+            if (getMapSessionGuess().containsKey(gameSessionId)) {
+                SessionGuess session = getMapSessionGuess().get(gameSessionId);
+                getMapSessionGuess().put(gameSessionId, session.
+                        withCountTry(session.getCountTry() + 1));
+                if (session.getRandomNumber() > number) {
+                    return new RegisterResponseGuess(">", getMapSessionGuess().get(gameSessionId).getCountTry(),
+                            "Число больше.");
+                } else if (session.getRandomNumber() < number) {
+                    return new RegisterResponseGuess("<", getMapSessionGuess().get(gameSessionId).getCountTry(),
+                            "Число меньше.");
+                } else {
+                    getMapAccount().put(account.getLoginName(), account.withGameStatus(false));
+                    Integer count = session.getCountTry();
+                    List<ResultGuess> resultGuesses = new ArrayList<>(getMapHistoryGuess().get(account.getLoginName()));
+                    resultGuesses.set(resultGuesses.size() - 1, new ResultGuess(account.getLoginName(), account.getSessionIdGuess(), count, true));
+                    getMapHistoryGuess().put(account.getLoginName(), resultGuesses);
+                    terminate(account.getLoginSessionId());
+                    return new RegisterResponseGuess("=", count, "Угадал за " + count.toString() + ".");
+                }
             }
-        } else {
-            return new RegisterResponseGuess(null, null, "Session does not exist");
         }
+        return new RegisterResponseGuess(null, null, "Session does not exist");
     }
 
     public List<Account> users() {
@@ -131,11 +132,33 @@ public class GuessService {
         }
     }
 
-    public String terminate(UUID id) {
-        if (getMapSessionGuess().containsKey(id)) {
-            getMapSessionGuess().remove(id);
-            return "Session terminate";
+    public String terminate(UUID loginSessionId) {
+        Account account = getAccount(loginSessionId);
+        if (account != null) {
+            if (getMapSessionGuess().containsKey(account.getSessionIdGuess())) {
+                List<ResultGuess> resultGuesses = new ArrayList<>(getMapHistoryGuess().get(account.getLoginName()));
+                resultGuesses.set(resultGuesses.size() - 1,
+                        new ResultGuess(account.getLoginName(), account.getSessionIdGuess(),
+                                getMapSessionGuess().get(account.getSessionIdGuess()).getCountTry(),
+                                resultGuesses.get(resultGuesses.size() - 1).getWin()));
+                getMapHistoryGuess().put(account.getLoginName(), resultGuesses);
+                getMapSessionGuess().remove(account.getSessionIdGuess());
+                accountService.getMapAccount().put(account.getLoginName(), account
+                        .withGameStatus(false)
+                        .withSessionIdGuess(null)
+                        .withLoginStatus(false)
+                        .withLoginSessionId(null)
+                );
+                getMapSessionGuess().remove(account.getSessionIdGuess());
+                return "Session terminate";
+            }
         }
         return "Session does not exist";
+    }
+
+    public Account getAccount(UUID loginSessionId) {
+        return getMapAccount().values().stream().filter(a -> a.getLoginSessionId() != null)
+                .filter(a -> a.getLoginSessionId().equals(loginSessionId))
+                .findAny().orElse(null);
     }
 }

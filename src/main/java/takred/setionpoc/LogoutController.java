@@ -14,7 +14,7 @@ public class LogoutController {
     }
 
     @RequestMapping(value = "/logout/{loginName}")
-    public logoutResponse logout(@PathVariable("loginName") String loginName) {
+    public LogoutResponse logout(@PathVariable("loginName") String loginName) {
         return logoutService.logout(loginName);
     }
 
